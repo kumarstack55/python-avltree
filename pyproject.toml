@@ -11,6 +11,13 @@ python = "^3.7"
 pytest = "^6.2.5"
 tox = "^3.24.3"
 
+# Python 3.7 で次のエラーによりテストの実行ができなかった。
+# ModuleNotFoundError: No module named 'importlib_metadata'
+# これは pytest が 3.8 より前では importlib_metadata に依存するためである。
+# https://github.com/pytest-dev/pytest/issues/7114#issuecomment-618993399
+# 次の記述により依存関係を解消する。
+importlib-metadata = {version = "^0.12", python = "3.7"}
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = [ "poetry-core>=1.0.0" ]
 build-backend = "poetry.core.masonry.api"

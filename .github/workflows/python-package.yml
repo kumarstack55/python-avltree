@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.9, 3.8]
+        python: [3.9, 3.8, 3.7, pypy-3.7]
 
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +27,11 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry install --no-interaction
 
+      # tox を使ったとき、 importlib-metadata に関する失敗が発生したため、
+      # GitHub Actions では tox を使わないことにする。
       - name: Run Tests
-        run: poetry run pytest
+        run: |
+          poetry run pytest
