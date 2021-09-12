@@ -19,6 +19,12 @@ class AvlNode(object):
     '''
 
     def __init__(self, key, data=None):
+        """AVL木のノードを得る。
+
+        Args:
+            key: ノードのキー
+            data: ノードのデータ
+        """
         self._key = key
         self._data = data
         self._left = None
@@ -26,27 +32,32 @@ class AvlNode(object):
         self._height = 1
 
     def update_node_height(self):
-        self._height = 1 + max(self.get_left_height(), self.get_right_height())
+        """ 左右のノードの高さをもとに、このノードの高さを更新する。 """
+        self._height = 1 + max(
+                self._get_left_height(), self._get_right_height())
 
     def _get_node_height_from_node_or_none(self, node_or_none):
         return 0 if node_or_none is None else node_or_none.height
 
-    def get_left_height(self):
+    def _get_left_height(self):
         return self._get_node_height_from_node_or_none(self._left)
 
-    def get_right_height(self):
+    def _get_right_height(self):
         return self._get_node_height_from_node_or_none(self._right)
 
     def _get_bias(self):
-        return self.get_left_height() - self.get_right_height()
+        return self._get_left_height() - self._get_right_height()
 
     def is_balanced(self):
+        """ このノードのバイアスが平衡か判定する。 """
         return abs(self._get_bias()) <= 1
 
     def is_left_high_unbalanced(self):
+        """ 平衡でなく、かつ、左が高すぎるなら True を返す。 """
         return self._get_bias() == 2
 
     def is_right_high_unbalanced(self):
+        """ 平衡でなく、かつ、右が高すぎるなら True を返す。 """
         return self._get_bias() == -2
 
     def is_left_high(self):
@@ -89,7 +100,7 @@ class AvlNode(object):
 
     @property
     def height(self):
-        ''' leaf のノードの高さを1とする高さ。 '''
+        ''' 葉のノードの高さを1とする高さ。 '''
         return self._height
 
     @height.setter
@@ -109,7 +120,7 @@ class AvlNode(object):
 
 
 class AvlTree(object):
-    def __init__(self, disable_rebalance=False):
+    def __init__(self):
         self._root = None
         self._changes_needed = False
 
