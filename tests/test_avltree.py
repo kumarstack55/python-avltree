@@ -106,6 +106,16 @@ def test_insert_random_find():
     assert tree.find_node(keys[0]) is not None
 
 
+def test_insert_random_strings():
+    """ キーとして文字列を挿入する。 """
+    keys = list("abcdefghijklmnopqrstuvwxyz")
+    random.shuffle(keys)
+    tree = AvlTree()
+    for key in keys:
+        tree.insert(key)
+    assert tree.is_balanced()
+
+
 def test_there_is_no_nodes_get_list_returns_none():
     tree = AvlTree()
     assert tree.get_list() is None
