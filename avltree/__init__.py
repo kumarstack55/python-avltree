@@ -4,7 +4,6 @@ from typing import Optional
 
 
 sys.setrecursionlimit(100000)
-inf = 10**20
 AvlNodeT = typing.TypeVar('T', bound='AvlNode')
 
 
@@ -27,6 +26,7 @@ class AvlNode(object):
         self._data = data
         self._left: Optional[AvlNodeT] = None
         self._right: Optional[AvlNodeT] = None
+        self._parent: Optional[AvlNodeT] = None
         self._height: int = 1
 
     def update_node_height(self):
@@ -96,6 +96,14 @@ class AvlNode(object):
     @right.setter
     def right(self, node: AvlNodeT):
         self._right = node
+
+    @property
+    def parent(self) -> AvlNodeT:
+        return self._parent
+
+    @parent.setter
+    def parent(self, node: AvlNodeT):
+        self._parent = node
 
     @property
     def height(self) -> int:
@@ -450,6 +458,19 @@ class AvlTree(object):
 
     def __repr__(self):
         return "<AvlTree " + str(self._get_list(self._root)) + ">"
+
+
+class AvlTreeImplRecursive(AvlTree):
+    pass
+
+
+# class AvlTreeImplNonRecursive(AvlTree):
+#     pass
+
+
+class AvlTreeFactory(object):
+    def create(self) -> AvlTree:
+        return AvlTreeImplRecursive()
 
 
 if __name__ == '__main__':
