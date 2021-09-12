@@ -104,3 +104,8 @@ def test_insert_random_find():
     for key in keys:
         tree.insert(key)
     assert tree.find_node(keys[0]) is not None
+
+
+def test_there_is_no_nodes_get_list_returns_none():
+    tree = AvlTree()
+    assert tree.get_list() is None
