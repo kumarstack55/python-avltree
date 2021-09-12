@@ -1,8 +1,11 @@
 import sys
+import typing
+from typing import Optional
 
 
 sys.setrecursionlimit(100000)
 inf = 10**20
+AvlNodeT = typing.TypeVar('T', bound='AvlNode')
 
 
 class AvlTreeException(Exception):
@@ -22,8 +25,8 @@ class AvlNode(object):
         """ AVL木のノードを得る。 """
         self._key = key
         self._data = data
-        self._left = None
-        self._right = None
+        self._left: Optional[AvlNodeT] = None
+        self._right: Optional[AvlNodeT] = None
         self._height = 1
 
     def update_node_height(self):
@@ -31,34 +34,35 @@ class AvlNode(object):
         self._height = 1 + max(
                 self._get_left_height(), self._get_right_height())
 
-    def _get_node_height_from_node_or_none(self, node_or_none):
+    def _get_node_height_from_node_or_none(
+            self, node_or_none: Optional[AvlNodeT]):
         return 0 if node_or_none is None else node_or_none.height
 
-    def _get_left_height(self):
+    def _get_left_height(self) -> int:
         return self._get_node_height_from_node_or_none(self._left)
 
-    def _get_right_height(self):
+    def _get_right_height(self) -> int:
         return self._get_node_height_from_node_or_none(self._right)
 
-    def _get_bias(self):
+    def _get_bias(self) -> int:
         return self._get_left_height() - self._get_right_height()
 
-    def is_balanced(self):
+    def is_balanced(self) -> bool:
         """ このノードのバイアスが平衡か判定する。 """
         return abs(self._get_bias()) <= 1
 
-    def is_left_high_unbalanced(self):
+    def is_left_high_unbalanced(self) -> bool:
         """ 平衡でなく、かつ、左が高すぎるなら True を返す。 """
         return self._get_bias() == 2
 
-    def is_right_high_unbalanced(self):
+    def is_right_high_unbalanced(self) -> bool:
         """ 平衡でなく、かつ、右が高すぎるなら True を返す。 """
         return self._get_bias() == -2
 
-    def is_left_high(self):
+    def is_left_child_higher_or_equal(self) -> bool:
         return self._get_bias() >= 0
 
-    def is_right_high(self):
+    def is_right_child_higher_or_equal(self) -> bool:
         return self._get_bias() <= 0
 
     @property
@@ -78,28 +82,28 @@ class AvlNode(object):
         self._data = data
 
     @property
-    def left(self):
+    def left(self) -> AvlNodeT:
         return self._left
 
     @left.setter
-    def left(self, node):
+    def left(self, node: AvlNodeT):
         self._left = node
 
     @property
-    def right(self):
+    def right(self) -> AvlNodeT:
         return self._right
 
     @right.setter
-    def right(self, node):
+    def right(self, node: AvlNodeT):
         self._right = node
 
     @property
-    def height(self):
+    def height(self) -> int:
         ''' 葉のノードの高さを1とする高さ。 '''
         return self._height
 
     @height.setter
-    def height(self, height):
+    def height(self, height: int):
         self._height = height
 
     def __repr__(self):
@@ -120,7 +124,7 @@ class AvlTree(object):
         self._root = None
         self._changes_needed = False
 
-    def _rotate_to_right(self, node1: AvlNode):
+    def _rotate_to_right(self, node1: AvlNode) -> AvlNode:
         ''' 右に回転する。 '''
 
         '''
@@ -140,7 +144,7 @@ class AvlTree(object):
         node2.update_node_height()
         return node2
 
-    def _rotate_to_left(self, node1: AvlNode):
+    def _rotate_to_left(self, node1: AvlNode) -> AvlNode:
         ''' 左に回転する。 '''
 
         '''
@@ -160,21 +164,34 @@ class AvlTree(object):
         node2.update_node_height()
         return node2
 
-    def _rotate_to_left_right(self, node: AvlNode):
-        node.left = self._rotate_to_left(node.left)
-        return self._rotate_to_right(node)
+    def _rotate_to_left_right(self, node1: AvlNode) -> AvlNode:
+        """ 左回転後、右回転する。 """
 
-    def _rotate_to_right_left(self, node: AvlNode):
+        """
+                  |                   |                |
+          .-------f-.   ->        .---f-.   ->     .---d---.
+          |         |             |     |          |       |
+        .-b---.     g         .---d-.   g        .-b-.   .-f-.
+        |     |               |     |            |   |   |   |
+        a   .-d-.           .-b-.   e            a   c   e   g
+            |   |           |   |
+            c   e           a   c
+        """
+        node1.left = self._rotate_to_left(node1.left)
+        return self._rotate_to_right(node1)
+
+    def _rotate_to_right_left(self, node: AvlNode) -> AvlNode:
         node.right = self._rotate_to_right(node.right)
         return self._rotate_to_left(node)
 
-    def _balance_left(self, node: AvlNode):
+    def _balance_left(self, node1: AvlNode) -> AvlNode:
         if not self._changes_needed:
-            return node
+            return node1
 
-        height = node.height
-        if node.is_left_high_unbalanced():
-            if node.left.is_left_high():
+        height = node1.height
+        if node1.is_left_high_unbalanced():
+            node2: AvlNode = node1.left
+            if node2.is_left_child_higher_or_equal():
                 '''
                         |
                     .-node1-.
@@ -183,8 +200,17 @@ class AvlTree(object):
                 |       |         | bias == 2
                 |       t12       |
                 t11              -+-
+
+                または
+
+                        |
+                    .-node1-.
+                    |       |
+                .-node2-.   t2   -+-
+                |       |         | bias == 2
+                t11     t12      -+-
                 '''
-                node = self._rotate_to_right(node)
+                node1 = self._rotate_to_right(node1)
             else:
                 '''
                           |
@@ -195,31 +221,42 @@ class AvlTree(object):
                 t11     |         |
                         t12      -+-
                 '''
-                node = self._rotate_to_left_right(node)
+                node1 = self._rotate_to_left_right(node1)
         else:
-            node.update_node_height()
+            node1.update_node_height()
 
-        self._changes_needed = (height != node.height)
+        self._changes_needed = (height != node1.height)
 
-        return node
+        return node1
 
-    def _balance_right(self, node: AvlNode):
+    def _balance_right(self, node1: AvlNode) -> AvlNode:
         if not self._changes_needed:
-            return node
+            return node1
 
-        height = node.height
-        if node.is_right_high_unbalanced():
-            if node.right.is_right_high():
+        height = node1.height
+        if node1.is_right_high_unbalanced():
+            node2: AvlNode = node1.right
+            if node2.is_right_child_higher_or_equal():
                 '''
                       |
                   .-node1-.
                   |       |
-                 t1   .-node2-.    -+-
-                      |       |     | bias == 2
-                      t21     |     |
-                              t22  -+-
+                 t1   .-node2-.      -+-
+                      |       |       | bias == 2
+                      t21     |       |
+                              |       |
+                              t22    -+-
+
+                または
+
+                      |
+                  .-node1-.
+                  |       |
+                 t1   .-node2-.      -+-
+                      |       |       | bias == 2
+                      t21     t22    -+-
                 '''
-                node = self._rotate_to_left(node)
+                node1 = self._rotate_to_left(node1)
             else:
                 '''
                       |
@@ -228,15 +265,16 @@ class AvlTree(object):
                  t1   .-node2-.    -+-
                       |       |     | bias == 2
                       |       t21   |
+                      |             |
                       t21          -+-
                 '''
-                node = self._rotate_to_right_left(node)
+                node1 = self._rotate_to_right_left(node1)
         else:
-            node.update_node_height()
+            node1.update_node_height()
 
-        self._changes_needed = (height != node.height)
+        self._changes_needed = (height != node1.height)
 
-        return node
+        return node1
 
     def _balance_when_insert_to_left(self, node: AvlNode):
         return self._balance_left(node)
@@ -282,7 +320,7 @@ class AvlTree(object):
         else:
             return node
 
-    def find_node(self, key):
+    def find_node(self, key) -> AvlNode:
         """ ノードを探す。 """
         if self._root is None:
             return None
@@ -299,7 +337,7 @@ class AvlTree(object):
                 return False
         return True
 
-    def is_balanced(self):
+    def is_balanced(self) -> bool:
         """ AVL木が平衡であるか確認する。 """
         if self._root is None:
             return True
@@ -332,7 +370,7 @@ class AvlTree(object):
 
     def get_list(
             self, repr_print_none: bool = False,
-            repr_print_object: bool = False):
+            repr_print_object: bool = False) -> list:
         """ グラフを表現するリストを得る。 """
         return self._get_list(
                 self._root, repr_print_none=repr_print_none,
