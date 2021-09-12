@@ -124,7 +124,7 @@ class AvlTree(object):
         self._root = None
         self._changes_needed = False
 
-    def _rotate_to_right(self, node1):
+    def _rotate_to_right(self, node1: AvlNode):
         ''' 右に回転する。 '''
 
         '''
@@ -144,7 +144,7 @@ class AvlTree(object):
         node2.update_node_height()
         return node2
 
-    def _rotate_to_left(self, node1):
+    def _rotate_to_left(self, node1: AvlNode):
         ''' 左に回転する。 '''
 
         '''
@@ -164,15 +164,15 @@ class AvlTree(object):
         node2.update_node_height()
         return node2
 
-    def _rotate_to_left_right(self, node):
+    def _rotate_to_left_right(self, node: AvlNode):
         node.left = self._rotate_to_left(node.left)
         return self._rotate_to_right(node)
 
-    def _rotate_to_right_left(self, node):
+    def _rotate_to_right_left(self, node: AvlNode):
         node.right = self._rotate_to_right(node.right)
         return self._rotate_to_left(node)
 
-    def _balance_left(self, node):
+    def _balance_left(self, node: AvlNode):
         if not self._changes_needed:
             return node
 
@@ -207,7 +207,7 @@ class AvlTree(object):
 
         return node
 
-    def _balance_right(self, node):
+    def _balance_right(self, node: AvlNode):
         if not self._changes_needed:
             return node
 
@@ -242,13 +242,14 @@ class AvlTree(object):
 
         return node
 
-    def _balance_when_insert_to_left(self, node):
+    def _balance_when_insert_to_left(self, node: AvlNode):
         return self._balance_left(node)
 
-    def _balance_when_insert_to_right(self, node):
+    def _balance_when_insert_to_right(self, node: AvlNode):
         return self._balance_right(node)
 
-    def _upsert(self, node, key, data=None, disable_update=False):
+    def _upsert(
+            self, node: AvlNode, key, data=None, disable_update: bool = False):
         if node is None:
             self._changes_needed = True
             return AvlNode(key, data)
@@ -273,7 +274,7 @@ class AvlTree(object):
         """ ノードを加える。 """
         self._root = self._upsert(self._root, key, data, disable_update=True)
 
-    def _find_node(self, key, node):
+    def _find_node(self, key, node: AvlNode):
         if key < node.key:
             if node.left is None:
                 return None
@@ -291,7 +292,7 @@ class AvlTree(object):
             return None
         return self._find_node(key, self._root)
 
-    def _is_balanced(self, node):
+    def _is_balanced(self, node: AvlNode):
         if node.left is not None:
             if not self._is_balanced(node.left):
                 return False
@@ -308,7 +309,9 @@ class AvlTree(object):
             return True
         return self._is_balanced(self._root)
 
-    def _get_list(self, node, repr_print_none=False, repr_print_object=False):
+    def _get_list(
+            self, node: AvlNode, repr_print_none: bool = False,
+            repr_print_object: bool = False):
         repr_list = []
 
         if node is None:
@@ -331,13 +334,15 @@ class AvlTree(object):
 
         return repr_list
 
-    def get_list(self, repr_print_none=False, repr_print_object=False):
+    def get_list(
+            self, repr_print_none: bool = False,
+            repr_print_object: bool = False):
         """ グラフを表現するリストを得る。 """
         return self._get_list(
                 self._root, repr_print_none=repr_print_none,
                 repr_print_object=repr_print_object)
 
-    def _print(self, repr_list, depth=0):
+    def _print(self, repr_list: list, depth: int = 0):
         if len(repr_list) != 3:
             raise AvlTreeException()
 
@@ -356,7 +361,7 @@ class AvlTree(object):
             else:
                 raise AvlTreeException()
 
-    def print(self, repr_print_object=False):
+    def print(self, repr_print_object: bool = False):
         """ グラフを出力する。 """
         repr_list = self._get_list(
                 self._root, repr_print_none=True,
