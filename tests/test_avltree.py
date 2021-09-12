@@ -1,5 +1,5 @@
 from avltree import AvlTree
-from avltree import AvlTreeFoundDuplicateKeyException
+from avltree import AvlTreeDuplicatedKeyFoundException
 import pytest
 import random
 
@@ -20,7 +20,7 @@ def test_inserting_dup_key_raises_exception():
     """ 重複したキーを挿入すると例外を発生する。 """
     tree = AvlTree()
     tree.insert(10, data={"a": 1})
-    with pytest.raises(AvlTreeFoundDuplicateKeyException):
+    with pytest.raises(AvlTreeDuplicatedKeyFoundException):
         tree.insert(10, data={"a": 2})
 
 
@@ -109,3 +109,24 @@ def test_insert_random_find():
 def test_there_is_no_nodes_get_list_returns_none():
     tree = AvlTree()
     assert tree.get_list() is None
+
+
+def test_delete():
+    """ ノードを消す。 """
+    tree = AvlTree()
+    tree.insert(10)
+    tree.delete(10)
+    assert tree.get_list() is None
+
+
+def test_insert_random_and_delete():
+    """ ランダムに挿入した平衡木からノードを消す。 """
+    N = 100000
+    keys = list(range(N))
+    random.shuffle(keys)
+    tree = AvlTree()
+    for key in keys:
+        tree.insert(key)
+    for key in keys[:N//10]:
+        tree.delete(key)
+    assert tree.is_balanced()

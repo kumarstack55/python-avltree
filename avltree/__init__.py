@@ -12,7 +12,7 @@ class AvlTreeException(Exception):
     pass
 
 
-class AvlTreeFoundDuplicateKeyException(Exception):
+class AvlTreeDuplicatedKeyFoundException(Exception):
     pass
 
 
@@ -27,7 +27,7 @@ class AvlNode(object):
         self._data = data
         self._left: Optional[AvlNodeT] = None
         self._right: Optional[AvlNodeT] = None
-        self._height = 1
+        self._height: int = 1
 
     def update_node_height(self):
         """ 左右のノードの高さをもとに、このノードの高さを更新する。 """
@@ -121,8 +121,10 @@ class AvlNode(object):
 class AvlTree(object):
     def __init__(self):
         """ AVL木を得る。 """
-        self._root = None
-        self._changes_needed = False
+        self._root: Optional[AvlNode] = None
+        self._changes_needed: bool = False
+        self._max_left_key = None
+        self._max_left_data = None
 
     def _rotate_to_right(self, node1: AvlNode) -> AvlNode:
         ''' 右に回転する。 '''
@@ -184,7 +186,7 @@ class AvlTree(object):
         node.right = self._rotate_to_right(node.right)
         return self._rotate_to_left(node)
 
-    def _balance_left(self, node1: AvlNode) -> AvlNode:
+    def _rebalance_left(self, node1: AvlNode) -> AvlNode:
         if not self._changes_needed:
             return node1
 
@@ -229,7 +231,7 @@ class AvlTree(object):
 
         return node1
 
-    def _balance_right(self, node1: AvlNode) -> AvlNode:
+    def _rebalance_right(self, node1: AvlNode) -> AvlNode:
         if not self._changes_needed:
             return node1
 
@@ -276,11 +278,11 @@ class AvlTree(object):
 
         return node1
 
-    def _balance_when_insert_to_left(self, node: AvlNode):
-        return self._balance_left(node)
+    def _rebalance_when_insert_to_left(self, node: AvlNode):
+        return self._rebalance_left(node)
 
-    def _balance_when_insert_to_right(self, node: AvlNode):
-        return self._balance_right(node)
+    def _rebalance_when_insert_to_right(self, node: AvlNode):
+        return self._rebalance_right(node)
 
     def _upsert(
             self, node: AvlNode, key, data=None, disable_update: bool = False):
@@ -289,13 +291,13 @@ class AvlTree(object):
             return AvlNode(key, data)
         elif key < node.key:
             node.left = self._upsert(node.left, key, data, disable_update)
-            return self._balance_when_insert_to_left(node)
+            return self._rebalance_when_insert_to_left(node)
         elif key > node.key:
             node.right = self._upsert(node.right, key, data, disable_update)
-            return self._balance_when_insert_to_right(node)
+            return self._rebalance_when_insert_to_right(node)
         else:
             if disable_update:
-                raise AvlTreeFoundDuplicateKeyException()
+                raise AvlTreeDuplicatedKeyFoundException()
             self._changes_needed = False
             node.data = data
             return node
@@ -307,6 +309,50 @@ class AvlTree(object):
     def insert(self, key, data=None):
         """ ノードを加える。 """
         self._root = self._upsert(self._root, key, data, disable_update=True)
+
+    def _rebalance_when_delete_from_left(self, node: AvlNode):
+        return self._rebalance_right(node)
+
+    def _rebalance_when_delete_from_right(self, node: AvlNode):
+        return self._rebalance_left(node)
+
+    def _delete_max(self, node):
+        if node.right is None:
+            # このノードのキーが最大である。
+
+            # 最大のキーとデータを更新する。
+            self._changes_needed = True
+            self._max_left_key = node.key
+            self._max_left_data = node.data
+
+            # 削除後のサブツリーを返すことで、このノードを消す。
+            return node.left
+        else:
+            node.right = self._delete_max(node.right)
+            return self._rebalance_when_delete_from_right(node)
+
+    def _delete(self, node: AvlNode, key):
+        if node is None:
+            self._changes_needed = False
+            return None
+        elif key < node.key:
+            node.left = self._delete(node.left, key)
+            return self._rebalance_when_delete_from_left(node)
+        elif key > node.key:
+            node.right = self._delete(node.right, key)
+            return self._rebalance_when_delete_from_right(node)
+        else:
+            if node.left is None:
+                self._changes_needed = True
+                return node.right
+            else:
+                node.left = self._delete_max(node.left)
+                node.key = self._max_left_key
+                node.data = self._max_left_data
+                return self._rebalance_when_delete_from_left(node)
+
+    def delete(self, key):
+        self._root = self._delete(self._root, key)
 
     def _find_node(self, key, node: AvlNode):
         if key < node.key:
