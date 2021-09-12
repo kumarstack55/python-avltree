@@ -176,24 +176,24 @@ class AvlTree(object):
         if node.is_left_high_unbalanced():
             if node.left.is_left_high():
                 '''
-                          |
-                    .---node----.
-                    |           |
-                .--left-.       t2   -+-
-                |       |             | bias == 2
-                |       t12           |
-                t11                  -+-
+                        |
+                    .-node1-.
+                    |       |
+                .-node2-.   t2   -+-
+                |       |         | bias == 2
+                |       t12       |
+                t11              -+-
                 '''
                 node = self._rotate_to_right(node)
             else:
                 '''
                           |
-                    .---node----.
-                    |           |
-                .--left-.       t2   -+-
-                |       |             | bias == 2
-                t11     |             |
-                        t12          -+-
+                    .-node1-.
+                    |       |
+                .-node2-.   t2   -+-
+                |       |         | bias == 2
+                t11     |         |
+                        t12      -+-
                 '''
                 node = self._rotate_to_left_right(node)
         else:
@@ -211,24 +211,24 @@ class AvlTree(object):
         if node.is_right_high_unbalanced():
             if node.right.is_right_high():
                 '''
-                        |
-                  .---node----.
-                  |           |
-                 t1       .-right-.    -+-
-                          |       |     | bias == 2
-                          t21     |     |
-                                  t22  -+-
+                      |
+                  .-node1-.
+                  |       |
+                 t1   .-node2-.    -+-
+                      |       |     | bias == 2
+                      t21     |     |
+                              t22  -+-
                 '''
                 node = self._rotate_to_left(node)
             else:
                 '''
-                        |
-                  .---node----.
-                  |           |
-                 t1       .-right-.    -+-
-                          |       |     | bias == 2
-                          |       t21   |
-                          t21          -+-
+                      |
+                  .-node1-.
+                  |       |
+                 t1   .-node2-.    -+-
+                      |       |     | bias == 2
+                      |       t21   |
+                      t21          -+-
                 '''
                 node = self._rotate_to_right_left(node)
         else:
