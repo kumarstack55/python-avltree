@@ -19,12 +19,7 @@ class AvlNode(object):
     '''
 
     def __init__(self, key, data=None):
-        """AVL木のノードを得る。
-
-        Args:
-            key: ノードのキー
-            data: ノードのデータ
-        """
+        """ AVL木のノードを得る。 """
         self._key = key
         self._data = data
         self._left = None
@@ -121,6 +116,7 @@ class AvlNode(object):
 
 class AvlTree(object):
     def __init__(self):
+        """ AVL木を得る。 """
         self._root = None
         self._changes_needed = False
 
