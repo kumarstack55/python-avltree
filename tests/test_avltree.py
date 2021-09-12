@@ -29,6 +29,7 @@ def test_upserting_dup_key_raises_exception():
     tree = AvlTree()
     tree.insert(10, data={"a": 1})
     tree.upsert(10, data={"a": 2})
+    assert tree.find_node(10).data["a"] == 2
 
 
 def test_insert_right():
