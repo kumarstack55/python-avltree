@@ -300,7 +300,7 @@ class AvlTree(object):
         return True
 
     def is_balanced(self):
-        """ 平衡であるか確認する。 """
+        """ AVL木が平衡であるか確認する。 """
         if self._root is None:
             return True
         return self._is_balanced(self._root)
